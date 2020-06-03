@@ -14,6 +14,8 @@ struct ContentView: View {
     @State private var showingScore = false
     @State private var scoreTitle = ""
     @State private var score: Int = 0
+    @State private var rotation = 0.0
+    @State private var opacity = 1.0
     
     var body: some View {
         ZStack{
@@ -32,7 +34,15 @@ struct ContentView: View {
                     Button(action: {
                         self.flagTapped(number)
                     }) {
-                        FlagImage(number: number, countries: self.countries)
+                        if(number == self.correctAnswer){
+                            FlagImage(number: number, countries: self.countries)
+                            .rotation3DEffect(.degrees(self.rotation), axis: (x: 0, y: 1, z: 0))
+                        }else{
+                            FlagImage(number: number, countries: self.countries)
+                                .opacity(self.opacity)
+                                .transition(.slide)
+                                .animation(.easeOut)
+                        }
                     }
                 }
                 Text("Score: \(score)")
@@ -42,6 +52,7 @@ struct ContentView: View {
             }
         }.alert(isPresented: $showingScore) {
             Alert(title: Text(scoreTitle), message: Text("Your score is \(score)"), dismissButton: .default(Text("Continue")){
+                self.opacity = 1.0
                 self.askQuestion()
                 })
         }
@@ -51,6 +62,10 @@ struct ContentView: View {
         if number == correctAnswer{
             score += 1
             scoreTitle = "Correct"
+            withAnimation(){
+                rotation += 360
+                opacity = 0.25
+            }
         } else{
             scoreTitle = "Wrong! That's the flag of \(countries[number])"
         }
